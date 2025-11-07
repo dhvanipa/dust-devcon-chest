@@ -126,6 +126,21 @@ export default function App() {
     },
   });
 
+  const handleAddWaypoint = async () => {
+    if (!dustClient) {
+      throw new Error("Could not connect to Dust client");
+    }
+    console.log("requesting marker");
+    await dustClient.provider.request({
+      method: "setWaypoint",
+      params: {
+        entity:
+          "0x03000000390000003fffffffa900000000000000000000000000000000000000",
+        label: "Devcon Chest",
+      },
+    });
+  };
+
   if (!dustClient) {
     const url = `https://alpha.dustproject.org?debug-app=${window.location.origin}/dust-app.json`;
     return (
@@ -141,6 +156,27 @@ export default function App() {
     return (
       <div className="flex flex-col h-screen items-center justify-center">
         <p className="text-center">Syncing ({syncStatus.percentage}%)...</p>
+      </div>
+    );
+  }
+
+  if (!dustClient.appContext.via) {
+    return (
+      <div>
+        <p>
+          Hello <AccountName address={dustClient.appContext.userAddress} />
+        </p>
+        <p>
+          Head to{" "}
+          <button
+            type="button"
+            className="underline"
+            onClick={handleAddWaypoint}
+          >
+            (57, 63, -87)
+          </button>{" "}
+          to use the Devcon Chest
+        </p>
       </div>
     );
   }
