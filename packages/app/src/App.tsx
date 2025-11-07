@@ -74,7 +74,7 @@ export default function App() {
         ],
         fieldsToReveal: {
           // The proof will reveal if the ticket has been consumed
-          ticketId: true,
+          // ticketId: true,
           productId: true,
         },
         externalNullifier: {

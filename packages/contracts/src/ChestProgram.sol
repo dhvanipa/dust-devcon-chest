@@ -28,10 +28,21 @@ contract ChestProgram is ITransfer, System, BaseProgram {
     require(verifyPubSignalKnownConstants(proof), "Invalid known constants");
 
     // Then verify the attributes
-    // TODO: implement attribute verification
+    require(verifyDevconAttributes(proof), "Invalid Devcon attributes");
 
     // And finally verify the proof
     require(Groth16Verifier(verifier).verifyProof(proof._pA, proof._pB, proof._pC, proof._pubSignals), "Invalid proof");
+
+    // TODO: add constraints on the transfer itself
+  }
+
+  function verifyDevconAttributes(ProofArgs memory proof) internal pure returns (bool) {
+    string memory devcon7SpeakerTicketProductId = "c64cac28-5719-4260-bd9a-ea0c0cb04d54";
+    require(proof._pubSignals[2] == sha256RightShift8(devcon7SpeakerTicketProductId), "Invalid ticket type");
+
+    // TODO: add attendee ticket product ID
+
+    return true;
   }
 
   function verifyPubSignalKnownConstants(ProofArgs memory proof) internal pure returns (bool) {
@@ -55,14 +66,14 @@ contract ChestProgram is ITransfer, System, BaseProgram {
       166182936600638516720995614121151326301699226988280236171566516501807187846,
       134391921332508560099964544679493715295561887371159641958333364222734962117,
       232848270766376164316822953942312735900953645668487075578980239826709112075,
-      373919738965490985996369790908574293362289358408055897574255306336508420178,
       166182936600638516720995614121151326301699226988280236171566516501807187846,
       166182936600638516720995614121151326301699226988280236171566516501807187846,
       166182936600638516720995614121151326301699226988280236171566516501807187846,
       166182936600638516720995614121151326301699226988280236171566516501807187846,
       166182936600638516720995614121151326301699226988280236171566516501807187846,
       166182936600638516720995614121151326301699226988280236171566516501807187846,
-      12,
+      166182936600638516720995614121151326301699226988280236171566516501807187846,
+      4,
       2,
       0,
       1,
@@ -161,6 +172,17 @@ contract ChestProgram is ITransfer, System, BaseProgram {
     }
 
     return true;
+  }
+
+  function sha256RightShift8(string memory input) internal pure returns (uint256 shifted) {
+    // Compute SHA-256 hash of the input
+    bytes32 hashBytes = sha256(abi.encodePacked(input));
+
+    // Convert to uint256
+    uint256 fullHash = uint256(hashBytes);
+
+    // Right-shift by 8 bits
+    shifted = fullHash >> 8;
   }
 
   // Required due to inheriting from System and WorldConsumer

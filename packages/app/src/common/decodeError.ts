@@ -24,6 +24,9 @@ export function decodeError(
       data: revertReason,
       abi,
     });
+    if (decodedReason.errorName === "Error") {
+      return `${decodedReason?.args?.join(", ")}`;
+    }
 
     return `${decodedReason.errorName}: ${decodedReason?.args?.join(", ")}`;
   }
