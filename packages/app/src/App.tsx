@@ -3,9 +3,9 @@ import { useSyncStatus } from "./mud/useSyncStatus";
 import { usePlayerPositionQuery } from "./common/usePlayerPositionQuery";
 import { AccountName } from "./common/AccountName";
 import { useDustClient } from "./common/useDustClient";
-import { stash, tables } from "./mud/stash";
-import { useRecord } from "@latticexyz/stash/react";
+import * as p from "@parcnet-js/podspec";
 import { useMutation } from "@tanstack/react-query";
+import { ticketProofRequest } from "@parcnet-js/ticket-spec";
 import { connect, ParcnetAPI, type Zapp } from "@parcnet-js/app-connector";
 import { useState } from "react";
 
@@ -39,6 +39,34 @@ export default function App() {
 
       const zCon = await connect(devconZapp, element, clientUrl);
       setZ(zCon);
+    },
+  });
+
+  const claimIron = useMutation({
+    mutationFn: async () => {
+      if (!z) throw new Error("Zupass not connected");
+
+      const request = ticketProofRequest({
+        classificationTuples: [
+          {
+            // Devcon 7
+            signerPublicKey: "YwahfUdUYehkGMaWh0+q3F8itx2h8mybjPmt8CmTJSs",
+            eventId: "5074edf5-f079-4099-b036-22223c0c6995",
+          },
+        ],
+        fieldsToReveal: {
+          // The proof will reveal if the ticket has been consumed
+          ticketId: true,
+          productId: true,
+        },
+        externalNullifier: {
+          type: "string",
+          value: "dust-devcon-iron-bar-claim",
+        },
+      });
+
+      const gpcProof = await z.gpc.prove({ request: request.schema });
+      console.log("Got GPC proof:", gpcProof);
     },
   });
 
@@ -81,6 +109,20 @@ export default function App() {
           </button>
           {connectZupass.error && (
             <p className="text-red-500">{String(connectZupass.error)}</p>
+          )}
+        </>
+      )}
+      {z && (
+        <>
+          <button
+            onClick={() => claimIron.mutate()}
+            disabled={claimIron.isPending}
+            className="bg-blue-500 text-white p-2"
+          >
+            {claimIron.isPending ? "Claiming..." : "Claim Iron Bar"}
+          </button>
+          {claimIron.error && (
+            <p className="text-red-500">{String(claimIron.error)}</p>
           )}
         </>
       )}

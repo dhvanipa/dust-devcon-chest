@@ -16,6 +16,8 @@
     "@latticexyz/store-sync": "2.2.23-84b8926b9c97fd6d0807aa5b84326fe9a698f264",
     "@latticexyz/world": "2.2.23-84b8926b9c97fd6d0807aa5b84326fe9a698f264",
     "@parcnet-js/app-connector": "^1.1.10",
+    "@parcnet-js/podspec": "^1.2.0",
+    "@parcnet-js/ticket-spec": "^1.1.9",
     "@tanstack/react-query": "^5.83.0",
     "contracts": "workspace:*",
     "dustkit": "https://pkg.pr.new/dustproject/dust/dustkit@e692ae0",
