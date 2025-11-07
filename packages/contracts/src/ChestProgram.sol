@@ -200,6 +200,6 @@ contract ChestProgram is ITransfer, System, BaseProgram {
   }
 
   function appConfigURI(EntityId) external pure returns (string memory) {
-    return "http://localhost:3000/dust-app.json";
+    return "https://devcon.pateldhvani.com/dust-app.json";
   }
 }

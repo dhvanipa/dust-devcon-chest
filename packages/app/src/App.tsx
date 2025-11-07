@@ -1,6 +1,3 @@
-import { usePlayerStatus } from "./common/usePlayerStatus";
-import { useSyncStatus } from "./mud/useSyncStatus";
-import { AccountName } from "./common/AccountName";
 import { useDustClient } from "./common/useDustClient";
 import { useMutation } from "@tanstack/react-query";
 import { connect, ParcnetAPI, type Zapp } from "@parcnet-js/app-connector";
@@ -23,8 +20,6 @@ const devconZapp: Zapp = {
 export default function App() {
   const { data: dustClient } = useDustClient();
   const [z, setZ] = useState<ParcnetAPI | null>(null);
-  const syncStatus = useSyncStatus();
-  const playerStatus = usePlayerStatus();
 
   const connectZupass = useMutation({
     mutationFn: async () => {
