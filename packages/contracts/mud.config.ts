@@ -18,5 +18,12 @@ export default defineWorld({
       },
       key: [],
     },
+    ClaimedGift: {
+      schema: {
+        ticketId: "uint256",
+        claimed: "bool",
+      },
+      key: ["ticketId"],
+    },
   },
 });

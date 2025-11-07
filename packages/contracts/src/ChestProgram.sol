@@ -6,6 +6,7 @@ import { System, WorldContextConsumer } from "@latticexyz/world/src/System.sol";
 import { EntityId } from "@dust/world/src/types/EntityId.sol";
 import { HookContext, ITransfer } from "@dust/world/src/ProgramHooks.sol";
 import { Verifier } from "./codegen/tables/Verifier.sol";
+import { ClaimedGift } from "./codegen/tables/ClaimedGift.sol";
 
 import { BaseProgram } from "./BaseProgram.sol";
 import { Groth16Verifier } from "./Groth16Verifier.sol";
@@ -33,7 +34,11 @@ contract ChestProgram is ITransfer, System, BaseProgram {
     // And finally verify the proof
     require(Groth16Verifier(verifier).verifyProof(proof._pA, proof._pB, proof._pC, proof._pubSignals), "Invalid proof");
 
-    // TODO: add constraints on the transfer itself
+    require(transfer.deposits.length == 0 && transfer.withdrawals.length == 1, "Only withdrawals allowed");
+    require(transfer.withdrawals[0].amount == 1, "Can only withdraw 1 item");
+    uint256 ticketId = proof._pubSignals[3];
+    require(!ClaimedGift.getClaimed(ticketId), "Gift already claimed for this ticket");
+    ClaimedGift.setClaimed(ticketId, true);
   }
 
   function verifyDevconAttributes(ProofArgs memory proof) internal pure returns (bool) {
@@ -66,14 +71,14 @@ contract ChestProgram is ITransfer, System, BaseProgram {
       166182936600638516720995614121151326301699226988280236171566516501807187846,
       134391921332508560099964544679493715295561887371159641958333364222734962117,
       232848270766376164316822953942312735900953645668487075578980239826709112075,
+      373919738965490985996369790908574293362289358408055897574255306336508420178,
       166182936600638516720995614121151326301699226988280236171566516501807187846,
       166182936600638516720995614121151326301699226988280236171566516501807187846,
       166182936600638516720995614121151326301699226988280236171566516501807187846,
       166182936600638516720995614121151326301699226988280236171566516501807187846,
       166182936600638516720995614121151326301699226988280236171566516501807187846,
       166182936600638516720995614121151326301699226988280236171566516501807187846,
-      166182936600638516720995614121151326301699226988280236171566516501807187846,
-      4,
+      12,
       2,
       0,
       1,
