@@ -91,6 +91,7 @@ export default function App() {
       const boundConfig = gpcProof.boundConfig;
       const revealedClaims = gpcProof.revealedClaims;
       const circuit = gpcPreVerify(boundConfig, revealedClaims);
+      console.log("Pre-verified GPC proof:", circuit);
       const pubSignals = ProtoPODGPC.makePublicSignals(
         circuit.circuitPublicInputs,
         circuit.circuitOutputs
@@ -108,6 +109,11 @@ export default function App() {
         pubSignals: pubSignals,
       };
       console.log("Converted proof:", convertedProof);
+      // print public signals as an array string
+      // console.log(
+      //   "Public signals:",
+      //   `[${convertedProof.pubSignals.map((x) => x.toString()).join(",\n")}]`
+      // );
 
       const chestEntityId = dustClient?.appContext.via?.entity;
       const userAddress = dustClient?.appContext.userAddress;
