@@ -14,6 +14,7 @@ export default defineConfig({
   resolve: {
     alias: {
       path: "path-browserify",
+      constants: "rollup-plugin-node-polyfills/polyfills/constants",
     },
   },
   define: {
