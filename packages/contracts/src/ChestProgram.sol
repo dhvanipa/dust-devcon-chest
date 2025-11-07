@@ -3,6 +3,7 @@ pragma solidity >=0.8.24;
 
 import { System, WorldContextConsumer } from "@latticexyz/world/src/System.sol";
 
+import { EntityId } from "@dust/world/src/types/EntityId.sol";
 import { HookContext, ITransfer } from "@dust/world/src/ProgramHooks.sol";
 import { Verifier } from "./codegen/tables/Verifier.sol";
 

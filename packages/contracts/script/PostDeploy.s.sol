@@ -15,6 +15,12 @@ contract PostDeploy is Script {
     StoreSwitch.setStoreAddress(worldAddress);
     startBroadcast();
 
+    if (Verifier.get() != address(0)) {
+      console.log("Verifier already set, skipping deployment", Verifier.get());
+      vm.stopBroadcast();
+      return;
+    }
+
     Groth16Verifier verifier = new Groth16Verifier();
     console.log("Deployed Groth16Verifier to:", address(verifier));
 

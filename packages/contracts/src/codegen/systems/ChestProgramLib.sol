@@ -5,6 +5,7 @@ pragma solidity >=0.8.24;
 
 import { ChestProgram } from "../../ChestProgram.sol";
 import { HookContext, ITransfer } from "@dust/world/src/ProgramHooks.sol";
+import { EntityId } from "@dust/world/src/types/EntityId.sol";
 import { revertWithBytes } from "@latticexyz/world/src/revertWithBytes.sol";
 import { IWorldCall } from "@latticexyz/world/src/IWorldKernel.sol";
 import { SystemCall } from "@latticexyz/world/src/SystemCall.sol";
@@ -48,6 +49,10 @@ library ChestProgramLib {
 
   function _msgValue(ChestProgramType self) internal view returns (uint256 __auxRet0) {
     return CallWrapper(self.toResourceId(), address(0))._msgValue();
+  }
+
+  function appConfigURI(ChestProgramType self, EntityId __auxArg0) internal view returns (string memory __auxRet0) {
+    return CallWrapper(self.toResourceId(), address(0)).appConfigURI(__auxArg0);
   }
 
   function onTransfer(
@@ -103,6 +108,24 @@ library ChestProgramLib {
     }
   }
 
+  function appConfigURI(CallWrapper memory self, EntityId __auxArg0) internal view returns (string memory __auxRet0) {
+    // if the contract calling this function is a root system, it should use `callAsRoot`
+    if (address(_world()) == address(this)) revert ChestProgramLib_CallingFromRootSystem();
+
+    bytes memory systemCall = abi.encodeCall(_appConfigURI_EntityId.appConfigURI, (__auxArg0));
+    bytes memory worldCall = self.from == address(0)
+      ? abi.encodeCall(IWorldCall.call, (self.systemId, systemCall))
+      : abi.encodeCall(IWorldCall.callFrom, (self.from, self.systemId, systemCall));
+    (bool success, bytes memory returnData) = address(_world()).staticcall(worldCall);
+    if (!success) revertWithBytes(returnData);
+
+    bytes memory result = abi.decode(returnData, (bytes));
+    // skip decoding an empty result, which can happen after expectRevert
+    if (result.length != 0) {
+      return abi.decode(result, (string));
+    }
+  }
+
   function onTransfer(
     RootCallWrapper memory self,
     HookContext memory ctx,
@@ -132,6 +155,19 @@ library ChestProgramLib {
     // skip decoding an empty result, which can happen after expectRevert
     if (result.length != 0) {
       return abi.decode(result, (uint256));
+    }
+  }
+
+  function appConfigURI(
+    RootCallWrapper memory self,
+    EntityId __auxArg0
+  ) internal view returns (string memory __auxRet0) {
+    bytes memory systemCall = abi.encodeCall(_appConfigURI_EntityId.appConfigURI, (__auxArg0));
+
+    bytes memory result = SystemCall.staticcallOrRevert(self.from, self.systemId, systemCall);
+    // skip decoding an empty result, which can happen after expectRevert
+    if (result.length != 0) {
+      return abi.decode(result, (string));
     }
   }
 
@@ -183,6 +219,10 @@ interface __msgSender {
 
 interface __msgValue {
   function _msgValue() external;
+}
+
+interface _appConfigURI_EntityId {
+  function appConfigURI(EntityId __auxArg0) external;
 }
 
 using ChestProgramLib for ChestProgramType global;
