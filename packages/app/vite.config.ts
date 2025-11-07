@@ -11,4 +11,12 @@ export default defineConfig({
       credentials: false,
     },
   },
+  resolve: {
+    alias: {
+      path: "path-browserify",
+    },
+  },
+  define: {
+    "process.env": {},
+  },
 });

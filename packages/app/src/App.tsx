@@ -3,8 +3,10 @@ import { useSyncStatus } from "./mud/useSyncStatus";
 import { usePlayerPositionQuery } from "./common/usePlayerPositionQuery";
 import { AccountName } from "./common/AccountName";
 import { useDustClient } from "./common/useDustClient";
+import { gpcPreVerify } from "@pcd/gpc";
 import * as p from "@parcnet-js/podspec";
 import { useMutation } from "@tanstack/react-query";
+import { ProtoPODGPC } from "@pcd/gpcircuits";
 import { ticketProofRequest } from "@parcnet-js/ticket-spec";
 import { connect, ParcnetAPI, type Zapp } from "@parcnet-js/app-connector";
 import { useState } from "react";
@@ -15,6 +17,23 @@ const devconZapp: Zapp = {
     READ_POD: { collections: ["Devcon SEA"] },
     REQUEST_PROOF: { collections: ["Devcon SEA"] },
   },
+};
+
+type ProofData = {
+  pi_a: string[];
+  pi_b: string[][]; // Array of arrays for pi_b
+  pi_c: string[];
+  pubSignals: bigint[];
+};
+
+// Utility function to convert string arrays to BigInt arrays
+const convertToBigIntArray = (arr: string[]): bigint[] => {
+  return arr.map((str) => BigInt(str));
+};
+
+// Utility function to convert nested string arrays to nested BigInt arrays
+const convertToBigIntNestedArray = (arr: string[][]): bigint[][] => {
+  return arr.map((subArr) => subArr.map((str) => BigInt(str)));
 };
 
 export default function App() {
@@ -67,6 +86,29 @@ export default function App() {
 
       const gpcProof = await z.gpc.prove({ request: request.schema });
       console.log("Got GPC proof:", gpcProof);
+      if (!gpcProof.success) {
+        throw new Error(`Failed to get valid GPC proof ${gpcProof.error}`);
+      }
+      const boundConfig = gpcProof.boundConfig;
+      const revealedClaims = gpcProof.revealedClaims;
+      const circuit = gpcPreVerify(boundConfig, revealedClaims);
+      const pubSignals = ProtoPODGPC.makePublicSignals(
+        circuit.circuitPublicInputs,
+        circuit.circuitOutputs
+      );
+
+      const reversedPiB: [any[], any[]] = [
+        gpcProof.proof.pi_b[0]?.slice().reverse() || [],
+        gpcProof.proof.pi_b[1]?.slice().reverse() || [],
+      ];
+
+      const convertedProof = {
+        pi_a: convertToBigIntArray(gpcProof.proof.pi_a.slice(0, -1)), // Remove last element
+        pi_b: convertToBigIntNestedArray(reversedPiB),
+        pi_c: convertToBigIntArray(gpcProof.proof.pi_c.slice(0, -1)), // Remove last element
+        pubSignals: pubSignals,
+      };
+      console.log("Converted proof:", convertedProof);
     },
   });
 
