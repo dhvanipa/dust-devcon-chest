@@ -162,77 +162,81 @@ export default function App() {
 
   if (!dustClient.appContext.via) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6">
-        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-8 max-w-md w-full shadow-2xl">
-          <div className="text-center space-y-4">
-            <h2 className="text-2xl font-bold text-slate-100">
-              Devcon 7 Gift Chest
-            </h2>
-            <p className="text-slate-400 text-sm">
-              Please visit the chest for your gift
-            </p>
-            <button
-              type="button"
-              onClick={handleAddWaypoint}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
-            >
-              Set Waypoint (57, 63, -87)
-            </button>
-          </div>
+      <div className="flex items-center justify-center min-h-screen bg-white p-8">
+        <div className="max-w-md w-full space-y-6 text-center">
+          <img
+            src="https://devcon.org/_next/image/?url=%2F_next%2Fstatic%2Fmedia%2Flogo-flowers.ab3bbdc0.png&w=1920&q=75"
+            alt="Devcon 7"
+            className="w-48 mx-auto mb-4"
+          />
+          <h2 className="text-3xl font-bold text-gray-900">
+            Devcon 7 Gift Chest
+          </h2>
+          <p className="text-gray-600">Visit the chest to claim your gift</p>
+          <button
+            type="button"
+            onClick={handleAddWaypoint}
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-6 rounded-md transition-colors duration-200"
+          >
+            Set Waypoint (57, 63, -87)
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6">
-      <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-8 max-w-md w-full shadow-2xl">
-        <div className="text-center space-y-6">
-          <div>
-            <h2 className="text-2xl font-bold text-slate-100 mb-2">
-              Devcon 7 Gift Chest
-            </h2>
-          </div>
-
-          {!z && (
-            <div className="space-y-4">
-              <button
-                onClick={() => connectZupass.mutate()}
-                disabled={connectZupass.isPending}
-                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
-              >
-                {connectZupass.isPending ? "Connecting..." : "Connect Zupass"}
-              </button>
-              {connectZupass.error && (
-                <p className="text-red-400 text-sm bg-red-900/20 border border-red-800 rounded-lg p-3">
-                  {String(connectZupass.error)}
-                </p>
-              )}
-            </div>
-          )}
-
-          {z && (
-            <div className="space-y-4">
-              <button
-                onClick={() => claimIron.mutate()}
-                disabled={claimIron.isPending}
-                className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
-              >
-                {claimIron.isPending ? "Processing..." : "Claim Gift"}
-              </button>
-              {claimIron.isSuccess && (
-                <p className="text-emerald-400 text-sm bg-emerald-900/20 border border-emerald-800 rounded-lg p-3">
-                  Gift claimed successfully!
-                </p>
-              )}
-              {claimIron.error && (
-                <p className="text-red-400 text-sm bg-red-900/20 border border-red-800 rounded-lg p-3">
-                  {String(claimIron.error)}
-                </p>
-              )}
-            </div>
-          )}
+    <div className="flex items-center justify-center min-h-screen bg-white p-8">
+      <div className="max-w-md w-full space-y-8">
+        <div className="text-center">
+          <img
+            src="https://devcon.org/_next/image/?url=%2F_next%2Fstatic%2Fmedia%2Flogo-flowers.ab3bbdc0.png&w=1920&q=75"
+            alt="Devcon 7"
+            className="w-48 mx-auto mb-4"
+          />
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            Devcon 7 Gift Chest
+          </h2>
         </div>
+
+        {!z && (
+          <div className="space-y-4">
+            <button
+              onClick={() => connectZupass.mutate()}
+              disabled={connectZupass.isPending}
+              className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium py-3 px-6 rounded-md transition-colors duration-200"
+            >
+              {connectZupass.isPending ? "Connecting..." : "Connect Zupass"}
+            </button>
+            {connectZupass.error && (
+              <p className="text-red-600 bg-red-50 border border-red-200 rounded-md p-4">
+                {String(connectZupass.error)}
+              </p>
+            )}
+          </div>
+        )}
+
+        {z && (
+          <div className="space-y-4">
+            <button
+              onClick={() => claimIron.mutate()}
+              disabled={claimIron.isPending}
+              className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium py-3 px-6 rounded-md transition-colors duration-200"
+            >
+              {claimIron.isPending ? "Processing..." : "Claim Gift"}
+            </button>
+            {claimIron.isSuccess && (
+              <p className="text-green-700 bg-green-50 border border-green-200 rounded-md p-4">
+                Gift claimed successfully!
+              </p>
+            )}
+            {claimIron.error && (
+              <p className="text-red-600 bg-red-50 border border-red-200 rounded-md p-4">
+                {String(claimIron.error)}
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

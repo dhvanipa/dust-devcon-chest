@@ -33,7 +33,7 @@ export async function getTicketProof(z: ParcnetAPI): Promise<ProofArgs> {
       },
     ],
     fieldsToReveal: {
-      // ticketId: true,
+      ticketId: true,
       productId: true,
     },
     externalNullifier: {
