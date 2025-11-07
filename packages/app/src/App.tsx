@@ -1,13 +1,8 @@
 import { usePlayerStatus } from "./common/usePlayerStatus";
 import { useSyncStatus } from "./mud/useSyncStatus";
-import { usePlayerPositionQuery } from "./common/usePlayerPositionQuery";
 import { AccountName } from "./common/AccountName";
 import { useDustClient } from "./common/useDustClient";
-import { gpcPreVerify } from "@pcd/gpc";
-import * as p from "@parcnet-js/podspec";
 import { useMutation } from "@tanstack/react-query";
-import { ProtoPODGPC } from "@pcd/gpcircuits";
-import { ticketProofRequest } from "@parcnet-js/ticket-spec";
 import { connect, ParcnetAPI, type Zapp } from "@parcnet-js/app-connector";
 import { useState } from "react";
 import { encodeAbiParameters, type Hex } from "viem";
@@ -15,6 +10,7 @@ import { encodePlayer, objectsByName } from "@dust/world/internal";
 import IWorldAbi from "@dust/world/out/IWorld.sol/IWorld.abi";
 import { resourceToHex } from "@latticexyz/common";
 import { decodeError } from "./common/decodeError";
+import { getTicketProof } from "./getTicketProof";
 
 const devconZapp: Zapp = {
   name: "Dust Devcon Zapp",
@@ -24,22 +20,11 @@ const devconZapp: Zapp = {
   },
 };
 
-// Utility function to convert string arrays to BigInt arrays
-const convertToBigIntArray = (arr: string[]): bigint[] => {
-  return arr.map((str) => BigInt(str));
-};
-
-// Utility function to convert nested string arrays to nested BigInt arrays
-const convertToBigIntNestedArray = (arr: string[][]): bigint[][] => {
-  return arr.map((subArr) => subArr.map((str) => BigInt(str)));
-};
-
 export default function App() {
   const { data: dustClient } = useDustClient();
   const [z, setZ] = useState<ParcnetAPI | null>(null);
   const syncStatus = useSyncStatus();
   const playerStatus = usePlayerStatus();
-  const playerPosition = usePlayerPositionQuery();
 
   const connectZupass = useMutation({
     mutationFn: async () => {
@@ -63,64 +48,14 @@ export default function App() {
     mutationFn: async () => {
       if (!dustClient) throw new Error("Dust client not connected");
       if (!z) throw new Error("Zupass not connected");
-
-      const request = ticketProofRequest({
-        classificationTuples: [
-          {
-            // Devcon 7
-            signerPublicKey: "YwahfUdUYehkGMaWh0+q3F8itx2h8mybjPmt8CmTJSs",
-            eventId: "5074edf5-f079-4099-b036-22223c0c6995",
-          },
-        ],
-        fieldsToReveal: {
-          // The proof will reveal if the ticket has been consumed
-          // ticketId: true,
-          productId: true,
-        },
-        externalNullifier: {
-          type: "string",
-          value: "dust-devcon-iron-bar-claim",
-        },
-      });
-
-      const gpcProof = await z.gpc.prove({ request: request.schema });
-      console.log("Got GPC proof:", gpcProof);
-      if (!gpcProof.success) {
-        throw new Error(`Failed to get valid GPC proof ${gpcProof.error}`);
-      }
-      const boundConfig = gpcProof.boundConfig;
-      const revealedClaims = gpcProof.revealedClaims;
-      const circuit = gpcPreVerify(boundConfig, revealedClaims);
-      console.log("Pre-verified GPC proof:", circuit);
-      const pubSignals = ProtoPODGPC.makePublicSignals(
-        circuit.circuitPublicInputs,
-        circuit.circuitOutputs
-      );
-
-      const reversedPiB: [any[], any[]] = [
-        gpcProof.proof.pi_b[0]?.slice().reverse() || [],
-        gpcProof.proof.pi_b[1]?.slice().reverse() || [],
-      ];
-
-      const convertedProof = {
-        pi_a: convertToBigIntArray(gpcProof.proof.pi_a.slice(0, -1)), // Remove last element
-        pi_b: convertToBigIntNestedArray(reversedPiB),
-        pi_c: convertToBigIntArray(gpcProof.proof.pi_c.slice(0, -1)), // Remove last element
-        pubSignals: pubSignals,
-      };
-      console.log("Converted proof:", convertedProof);
-      // print public signals as an array string
-      // console.log(
-      //   "Public signals:",
-      //   `[${convertedProof.pubSignals.map((x) => x.toString()).join(",\n")}]`
-      // );
-
       const chestEntityId = dustClient?.appContext.via?.entity;
       const userAddress = dustClient?.appContext.userAddress;
       const userEntityId = userAddress ? encodePlayer(userAddress) : undefined;
       if (!chestEntityId || !userEntityId) {
         throw new Error("Missing chest or user entity ID");
       }
+
+      const ticketProof = await getTicketProof(z);
 
       const chestSlots = await dustClient.provider.request({
         method: "getSlots",
@@ -176,20 +111,7 @@ export default function App() {
                     ],
                   },
                 ],
-                [
-                  {
-                    _pA: convertedProof.pi_a as [bigint, bigint],
-                    _pB: convertedProof.pi_b as [
-                      [bigint, bigint],
-                      [bigint, bigint],
-                    ],
-                    _pC: convertedProof.pi_c as [bigint, bigint],
-                    _pubSignals:
-                      convertedProof.pubSignals as readonly bigint[] & {
-                        length: 126;
-                      },
-                  },
-                ]
+                [ticketProof]
               ),
             ],
           },
@@ -228,10 +150,6 @@ export default function App() {
       <p>
         Hello <AccountName address={dustClient.appContext.userAddress} />
       </p>
-      {playerPosition.data && (
-        <p>Your position: {JSON.stringify(playerPosition.data, null, " ")}</p>
-      )}
-      {playerStatus && <p>Your status: {playerStatus}</p>}
       {!z && (
         <>
           <button
@@ -255,6 +173,7 @@ export default function App() {
           >
             {claimIron.isPending ? "Claiming..." : "Claim Iron Bar"}
           </button>
+          {claimIron.isSuccess && <p>Successfully claimed iron bar!</p>}
           {claimIron.error && (
             <p className="text-red-500">{String(claimIron.error)}</p>
           )}
