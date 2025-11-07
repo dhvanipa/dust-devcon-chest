@@ -1,5 +1,5 @@
 {
-  "name": "dust-template",
+  "name": "dust-devcon-chest",
   "private": true,
   "scripts": {
     "build": "pnpm recursive run build",
