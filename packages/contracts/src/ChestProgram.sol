@@ -36,9 +36,9 @@ contract ChestProgram is ITransfer, System, BaseProgram {
 
     require(transfer.deposits.length == 0 && transfer.withdrawals.length == 1, "Only withdrawals allowed");
     require(transfer.withdrawals[0].amount == 1, "Can only withdraw 1 item");
-    uint256 ticketId = proof._pubSignals[3];
-    require(!ClaimedGift.getClaimed(ticketId), "Gift already claimed for this ticket");
-    ClaimedGift.setClaimed(ticketId, true);
+    uint256 ticketIdHash = proof._pubSignals[3];
+    require(!ClaimedGift.getClaimed(ticketIdHash), "Gift already claimed for this ticket");
+    ClaimedGift.setClaimed(ticketIdHash, true);
   }
 
   function verifyDevconAttributes(ProofArgs memory proof) internal pure returns (bool) {
