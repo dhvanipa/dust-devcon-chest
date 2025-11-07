@@ -152,69 +152,88 @@ export default function App() {
     );
   }
 
-  if (!syncStatus.isLive || !playerStatus) {
-    return (
-      <div className="flex flex-col h-screen items-center justify-center">
-        <p className="text-center">Syncing ({syncStatus.percentage}%)...</p>
-      </div>
-    );
-  }
+  // if (!syncStatus.isLive || !playerStatus) {
+  //   return (
+  //     <div className="flex flex-col h-screen items-center justify-center">
+  //       <p className="text-center">Syncing ({syncStatus.percentage}%)...</p>
+  //     </div>
+  //   );
+  // }
 
   if (!dustClient.appContext.via) {
     return (
-      <div>
-        <p>
-          Hello <AccountName address={dustClient.appContext.userAddress} />
-        </p>
-        <p>
-          Head to{" "}
-          <button
-            type="button"
-            className="underline"
-            onClick={handleAddWaypoint}
-          >
-            (57, 63, -87)
-          </button>{" "}
-          to use the Devcon Chest
-        </p>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6">
+        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-8 max-w-md w-full shadow-2xl">
+          <div className="text-center space-y-4">
+            <h2 className="text-2xl font-bold text-slate-100">
+              Devcon 7 Gift Chest
+            </h2>
+            <p className="text-slate-400 text-sm">
+              Please visit the chest for your gift
+            </p>
+            <button
+              type="button"
+              onClick={handleAddWaypoint}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
+            >
+              Set Waypoint (57, 63, -87)
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div>
-      <p>
-        Hello <AccountName address={dustClient.appContext.userAddress} />
-      </p>
-      {!z && (
-        <>
-          <button
-            onClick={() => connectZupass.mutate()}
-            disabled={connectZupass.isPending}
-            className="bg-blue-500 text-white p-2"
-          >
-            {connectZupass.isPending ? "Connecting..." : "Connect Zupass"}
-          </button>
-          {connectZupass.error && (
-            <p className="text-red-500">{String(connectZupass.error)}</p>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 p-6">
+      <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl p-8 max-w-md w-full shadow-2xl">
+        <div className="text-center space-y-6">
+          <div>
+            <h2 className="text-2xl font-bold text-slate-100 mb-2">
+              Devcon 7 Gift Chest
+            </h2>
+          </div>
+
+          {!z && (
+            <div className="space-y-4">
+              <button
+                onClick={() => connectZupass.mutate()}
+                disabled={connectZupass.isPending}
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
+              >
+                {connectZupass.isPending ? "Connecting..." : "Connect Zupass"}
+              </button>
+              {connectZupass.error && (
+                <p className="text-red-400 text-sm bg-red-900/20 border border-red-800 rounded-lg p-3">
+                  {String(connectZupass.error)}
+                </p>
+              )}
+            </div>
           )}
-        </>
-      )}
-      {z && (
-        <>
-          <button
-            onClick={() => claimIron.mutate()}
-            disabled={claimIron.isPending}
-            className="bg-blue-500 text-white p-2"
-          >
-            {claimIron.isPending ? "Claiming..." : "Claim Iron Bar"}
-          </button>
-          {claimIron.isSuccess && <p>Successfully claimed iron bar!</p>}
-          {claimIron.error && (
-            <p className="text-red-500">{String(claimIron.error)}</p>
+
+          {z && (
+            <div className="space-y-4">
+              <button
+                onClick={() => claimIron.mutate()}
+                disabled={claimIron.isPending}
+                className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
+              >
+                {claimIron.isPending ? "Processing..." : "Claim Gift"}
+              </button>
+              {claimIron.isSuccess && (
+                <p className="text-emerald-400 text-sm bg-emerald-900/20 border border-emerald-800 rounded-lg p-3">
+                  Gift claimed successfully!
+                </p>
+              )}
+              {claimIron.error && (
+                <p className="text-red-400 text-sm bg-red-900/20 border border-red-800 rounded-lg p-3">
+                  {String(claimIron.error)}
+                </p>
+              )}
+            </div>
           )}
-        </>
-      )}
+        </div>
+      </div>
     </div>
   );
 }
