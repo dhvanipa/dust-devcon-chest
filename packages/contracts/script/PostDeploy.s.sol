@@ -6,12 +6,9 @@ import { console } from "forge-std/console.sol";
 
 import { Script } from "./Script.sol";
 
-import { bedProgram } from "../src/codegen/systems/BedProgramLib.sol";
-
-import { chestCounterProgram } from "../src/codegen/systems/ChestCounterProgramLib.sol";
 import { chestProgram } from "../src/codegen/systems/ChestProgramLib.sol";
-import { forceFieldProgram } from "../src/codegen/systems/ForceFieldProgramLib.sol";
-import { spawnTileProgram } from "../src/codegen/systems/SpawnTileProgramLib.sol";
+import { Verifier } from "../src/codegen/tables/Verifier.sol";
+import { Groth16Verifier } from "../src/Groth16Verifier.sol";
 
 contract PostDeploy is Script {
   function run(address worldAddress) external {
@@ -26,16 +23,17 @@ contract PostDeploy is Script {
       console.log("Setting local world address to:", worldAddress);
       _setLocalWorldAddress(worldAddress);
     }
+
+    Groth16Verifier verifier = new Groth16Verifier();
+    console.log("Deployed Groth16Verifier to:", address(verifier));
+
+    Verifier.set(address(verifier));
   }
 
   // Set the world address by directly writing to storage for local setup
   function _setLocalWorldAddress(address worldAddress) internal {
     bytes32 worldSlot = keccak256("mud.store.storage.StoreSwitch");
     bytes32 worldAddressBytes32 = bytes32(uint256(uint160(worldAddress)));
-    vm.store(forceFieldProgram.getAddress(), worldSlot, worldAddressBytes32);
-    vm.store(spawnTileProgram.getAddress(), worldSlot, worldAddressBytes32);
-    vm.store(bedProgram.getAddress(), worldSlot, worldAddressBytes32);
     vm.store(chestProgram.getAddress(), worldSlot, worldAddressBytes32);
-    vm.store(chestCounterProgram.getAddress(), worldSlot, worldAddressBytes32);
   }
 }

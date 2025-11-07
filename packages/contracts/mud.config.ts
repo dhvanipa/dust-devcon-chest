@@ -25,34 +25,15 @@ export default defineWorld({
   // Replace this with a unique namespace
   namespace: "template",
   systems: {
-    ForceFieldProgram: {
-      openAccess: false,
-      deploy: { registerWorldFunctions: false },
-    },
-    SpawnTileProgram: {
-      openAccess: false,
-      deploy: { registerWorldFunctions: false },
-    },
     ChestProgram: {
-      openAccess: false,
-      deploy: { registerWorldFunctions: false },
-    },
-    BedProgram: {
-      openAccess: false,
-      deploy: { registerWorldFunctions: false },
-    },
-    CounterSystem: {
-      deploy: { registerWorldFunctions: false },
-    },
-    ChestCounterProgram: {
       openAccess: false,
       deploy: { registerWorldFunctions: false },
     },
   },
   tables: {
-    Counter: {
+    Verifier: {
       schema: {
-        value: "uint256",
+        value: "address",
       },
       key: [],
     },
