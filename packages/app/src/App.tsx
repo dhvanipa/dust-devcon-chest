@@ -61,9 +61,9 @@ export default function App() {
         method: "getSlots",
         params: {
           entity: chestEntityId as Hex,
-          objectType: objectsByName.VinesBush.id,
+          objectType: objectsByName.PumpkinSoup.id,
           amount: 1,
-          operationType: "deposit",
+          operationType: "withdraw",
         },
       });
 
@@ -71,9 +71,9 @@ export default function App() {
         method: "getSlots",
         params: {
           entity: userEntityId as Hex,
-          objectType: objectsByName.VinesBush.id,
+          objectType: objectsByName.PumpkinSoup.id,
           amount: 1,
-          operationType: "withdraw",
+          operationType: "deposit",
         },
       });
 
@@ -90,12 +90,12 @@ export default function App() {
             functionName: "transfer",
             args: [
               userEntityId,
-              userEntityId,
               chestEntityId,
+              userEntityId,
               [
                 {
-                  slotFrom: userSlots.slots[0].slot,
-                  slotTo: chestSlots.slots[0].slot,
+                  slotFrom: chestSlots.slots[0].slot,
+                  slotTo: userSlots.slots[0].slot,
                   amount: BigInt(1),
                 },
               ],
@@ -135,7 +135,7 @@ export default function App() {
       method: "setWaypoint",
       params: {
         entity:
-          "0x03000000390000003fffffffa900000000000000000000000000000000000000",
+          "0x030000025c00000093fffffab100000000000000000000000000000000000000",
         label: "Devcon Chest",
       },
     });
@@ -178,7 +178,7 @@ export default function App() {
             onClick={handleAddWaypoint}
             className="w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-6 rounded-md transition-colors duration-200"
           >
-            Set Waypoint (57, 63, -87)
+            Set Waypoint (604, 147, -1359)
           </button>
         </div>
       </div>
