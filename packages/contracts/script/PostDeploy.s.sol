@@ -15,25 +15,11 @@ contract PostDeploy is Script {
     StoreSwitch.setStoreAddress(worldAddress);
     startBroadcast();
 
-    // do something
-
-    vm.stopBroadcast();
-
-    if (block.chainid == 31337) {
-      console.log("Setting local world address to:", worldAddress);
-      _setLocalWorldAddress(worldAddress);
-    }
-
     Groth16Verifier verifier = new Groth16Verifier();
     console.log("Deployed Groth16Verifier to:", address(verifier));
 
     Verifier.set(address(verifier));
-  }
 
-  // Set the world address by directly writing to storage for local setup
-  function _setLocalWorldAddress(address worldAddress) internal {
-    bytes32 worldSlot = keccak256("mud.store.storage.StoreSwitch");
-    bytes32 worldAddressBytes32 = bytes32(uint256(uint160(worldAddress)));
-    vm.store(chestProgram.getAddress(), worldSlot, worldAddressBytes32);
+    vm.stopBroadcast();
   }
 }
