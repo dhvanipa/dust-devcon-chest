@@ -32,4 +32,8 @@ contract ChestProgram is ITransfer, System, BaseProgram {
   function _msgValue() public view override(WorldContextConsumer, BaseProgram) returns (uint256) {
     return BaseProgram._msgValue();
   }
+
+  function appConfigURI(EntityId) external pure returns (string memory) {
+    return "http://localhost:3000/dust-app.json";
+  }
 }

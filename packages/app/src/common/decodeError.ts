@@ -6,7 +6,10 @@ import {
 } from "viem";
 import { entryPoint07Abi } from "viem/account-abstraction";
 
-export function decodeError(abi: Abi, receipt: TransactionReceipt) {
+export function decodeError(
+  abi: Abi,
+  receipt: Pick<TransactionReceipt, "logs">
+) {
   const encodedReason = parseEventLogs({
     logs: receipt.logs,
     abi: entryPoint07Abi,

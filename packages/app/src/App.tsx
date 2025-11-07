@@ -10,6 +10,11 @@ import { ProtoPODGPC } from "@pcd/gpcircuits";
 import { ticketProofRequest } from "@parcnet-js/ticket-spec";
 import { connect, ParcnetAPI, type Zapp } from "@parcnet-js/app-connector";
 import { useState } from "react";
+import { encodeAbiParameters, type Hex } from "viem";
+import { encodePlayer, objectsByName } from "@dust/world/internal";
+import IWorldAbi from "@dust/world/out/IWorld.sol/IWorld.abi";
+import { resourceToHex } from "@latticexyz/common";
+import { decodeError } from "./common/decodeError";
 
 const devconZapp: Zapp = {
   name: "Dust Devcon Zapp",
@@ -17,13 +22,6 @@ const devconZapp: Zapp = {
     READ_POD: { collections: ["Devcon SEA"] },
     REQUEST_PROOF: { collections: ["Devcon SEA"] },
   },
-};
-
-type ProofData = {
-  pi_a: string[];
-  pi_b: string[][]; // Array of arrays for pi_b
-  pi_c: string[];
-  pubSignals: bigint[];
 };
 
 // Utility function to convert string arrays to BigInt arrays
@@ -63,6 +61,7 @@ export default function App() {
 
   const claimIron = useMutation({
     mutationFn: async () => {
+      if (!dustClient) throw new Error("Dust client not connected");
       if (!z) throw new Error("Zupass not connected");
 
       const request = ticketProofRequest({
@@ -109,6 +108,93 @@ export default function App() {
         pubSignals: pubSignals,
       };
       console.log("Converted proof:", convertedProof);
+
+      const chestEntityId = dustClient?.appContext.via?.entity;
+      const userAddress = dustClient?.appContext.userAddress;
+      const userEntityId = userAddress ? encodePlayer(userAddress) : undefined;
+      if (!chestEntityId || !userEntityId) {
+        throw new Error("Missing chest or user entity ID");
+      }
+
+      const chestSlots = await dustClient.provider.request({
+        method: "getSlots",
+        params: {
+          entity: chestEntityId as Hex,
+          objectType: objectsByName.VinesBush.id,
+          amount: 1,
+          operationType: "deposit",
+        },
+      });
+
+      const userSlots = await dustClient.provider.request({
+        method: "getSlots",
+        params: {
+          entity: userEntityId as Hex,
+          objectType: objectsByName.VinesBush.id,
+          amount: 1,
+          operationType: "withdraw",
+        },
+      });
+
+      const transferRes = await dustClient.provider.request({
+        method: "systemCall",
+        params: [
+          {
+            systemId: resourceToHex({
+              type: "system",
+              namespace: "",
+              name: "TransferSystem",
+            }),
+            abi: IWorldAbi,
+            functionName: "transfer",
+            args: [
+              userEntityId,
+              userEntityId,
+              chestEntityId,
+              [
+                {
+                  slotFrom: userSlots.slots[0].slot,
+                  slotTo: chestSlots.slots[0].slot,
+                  amount: BigInt(1),
+                },
+              ],
+              encodeAbiParameters(
+                [
+                  {
+                    type: "tuple",
+                    components: [
+                      { name: "_pA", type: "uint256[2]" },
+                      { name: "_pB", type: "uint256[2][2]" },
+                      { name: "_pC", type: "uint256[2]" },
+                      { name: "_pubSignals", type: "uint256[126]" },
+                    ],
+                  },
+                ],
+                [
+                  {
+                    _pA: convertedProof.pi_a as [bigint, bigint],
+                    _pB: convertedProof.pi_b as [
+                      [bigint, bigint],
+                      [bigint, bigint],
+                    ],
+                    _pC: convertedProof.pi_c as [bigint, bigint],
+                    _pubSignals:
+                      convertedProof.pubSignals as readonly bigint[] & {
+                        length: 126;
+                      },
+                  },
+                ]
+              ),
+            ],
+          },
+        ],
+      });
+
+      const transferErrorMessage = decodeError(IWorldAbi, transferRes.receipt);
+      if (transferErrorMessage) {
+        throw new Error(transferErrorMessage);
+      }
+      return transferRes;
     },
   });
 
